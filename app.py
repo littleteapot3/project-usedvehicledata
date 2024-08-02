@@ -37,18 +37,18 @@ def read_and_clean(path):
     #Reset the index
     df = df.reset_index(drop=True)
 
-    df['is_4wd'] = df['is_4wd'] == 1.0
     df['date_posted'] = pd.to_datetime(df['date_posted'],format='%Y-%m-%d')
 
-    # Change date_posted from object to datetime
-    columns_to_fill = ['odometer', 'cylinders', 'paint_color']
+    #df['is_4wd'] = df['is_4wd'] == 1.0
 
-    for column in columns_to_fill:
-        if column == 'paint_color':
-            df[column] = df[column].fillna('unknown')
-        else:
-            df[column] = df[column].fillna(0.0)
+    # # Change date_posted from object to datetime
+    # columns_to_fill = ['odometer', 'cylinders', 'paint_color']
 
+    # for column in columns_to_fill:
+    #     if column == 'paint_color':
+    #         df[column] = df[column].fillna('unknown')
+    #     else:
+    #         df[column] = df[column].fillna(0.0)
 
 
     # Create a 'make' column for manufacturer
