@@ -14,9 +14,9 @@ This app performs simple explorations of used vehicle sales data.
 
 st.sidebar.header('Data filters')
 
-@st.cache_data
 
-def read_and_clean(file_path):
+@st.cache_data
+def read_and_clean(path):
     """
     Preprocess the data from the CSV file.
     
@@ -26,13 +26,15 @@ def read_and_clean(file_path):
     Returns:
     - A filtered DataFrame based on the criteria.
     """
-    
     # Read in the file
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(path)
 
     # Tidy the data
-    # Drop rows without a year 
+    # Drop rows without a year
     df = df.dropna(subset=['model_year'])
+
+    #Reset the index
+    df = df.reset_index(drop=True)
 
     df['is_4wd'] = df['is_4wd'] == 1.0
     df['date_posted'] = pd.to_datetime(df['date_posted'],format='%Y-%m-%d')
@@ -61,6 +63,7 @@ def read_and_clean(file_path):
 # Preprocess the data
 file_path = "vehicles_us.csv"
 vehicles_df = read_and_clean(file_path)
+
 
 # Function to filter and show data for the selected year
 def filtered_df(vehicles_df, selected_make, selected_year='All'):
@@ -115,7 +118,7 @@ Select a year using the Data Filter. The resulting data for that year will appea
 """)
 st.write("Number of results: ", filtered_df.shape[0])
 
-# # Ensure column types are consistent before displaying
+# Ensure column types are consistent before displaying
 filtered_df = filtered_df.astype({
     'index': 'object',
     'model_year': 'int64',
@@ -127,15 +130,14 @@ filtered_df = filtered_df.astype({
 # Ensure the index is reset to avoid issues
 filtered_df = filtered_df.reset_index(drop=True)
 
-# # Debugging - Display the dataframe dtypes
-# st.subheader('DataFrame Column Types')
-# st.write(filtered_df.dtypes)
 
 column_list = ('make', 'model_year', 'model', 'type','condition', 'price', 'date_posted','days_listed', 'paint_color',
                'cylinders', 'transmission', 'is_4wd')
 
 
 # Display the dataframe based on the selected year
+
+
 st.dataframe(
     filtered_df,
     column_config={
@@ -164,33 +166,6 @@ st.dataframe(
 )
 
 
-
-
-# st.data_editor(
-#     filtered_df,
-#     column_config={
-#         "model_year": st.column_config.NumberColumn(
-#             "model year",
-#             step=1,
-#             format="%d"
-#         ),
-#         "paint_color":st.column_config.Column(
-#             "paint color"
-#         ),
-#         "days_listed":st.column_config.Column(
-#             "days listed"
-#         ),
-#         "is_4wd":st.column_config.Column(
-#             "has 4wd"
-#         ),
-#         "date_posted": st.column_config.DateColumn(
-#             "date posted",
-#             format="MM-DD-YYYY",
-#             step=1,
-#         ),
-#     },
-#     hide_index=True,
-# )
 
 
 st.write(' ')
@@ -273,13 +248,15 @@ st.plotly_chart(fig2)
 
 # Scatterplot: Price vs Odometer Reading
 st.header('Price vs. Odometer Reading')
-st.write(""" 
-The scatterplot of price vs. odometer reading provides insights into how mileage
-affects the price of vehicles. Generally, we expect to see that higher mileage
-vehicles tend to be priced lower. This scatterplot helps validate or challenge that 
-assumption and highlights any interesting patterns or anomalies in the data.  
+st.write("""
+         The scatterplot of price vs. odometer reading provides insights into how mileage 
+         affects the price of vehicles. Generally, we expect to see that higher mileage
+         vehicles tend to be priced lower. This scatterplot helps validate or challenge that 
+         assumption and highlights any interesting patterns or anomalies in the data.  
 """)
-fig3 = px.scatter(filtered_df, x='odometer', y='price', color='condition', title='Price vs. Odometer Reading', labels={'odometer':'Odometer Reading', 'price':'Price'})
+fig3 = px.scatter(filtered_df, x='odometer', y='price', color='condition', 
+                  title='Price vs. Odometer Reading',
+                    labels={'odometer':'Odometer Reading', 'price':'Price'})
 st.plotly_chart(fig3)
 
 
