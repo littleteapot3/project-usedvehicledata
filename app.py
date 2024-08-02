@@ -127,9 +127,9 @@ filtered_df = filtered_df.astype({
 # Ensure the index is reset to avoid issues
 filtered_df = filtered_df.reset_index(drop=True)
 
-# Display the dataframe dtypes
-st.subheader('DataFrame Column Types')
-st.write(filtered_df.dtypes)
+# # Debugging - Display the dataframe dtypes
+# st.subheader('DataFrame Column Types')
+# st.write(filtered_df.dtypes)
 
 column_list = ('make', 'model_year', 'model', 'type','condition', 'price', 'date_posted','days_listed', 'paint_color',
                'cylinders', 'transmission', 'is_4wd')
