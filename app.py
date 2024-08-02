@@ -115,27 +115,58 @@ Select a year using the Data Filter. The resulting data for that year will appea
 """)
 st.write("Number of results: ", filtered_df.shape[0])
 
-# # # Ensure column types are consistent before displaying
-# # filtered_df = filtered_df.astype({
-# #     'model_year': 'int64',
-# #     'price': 'float64',
-# #     'odometer': 'float64',
-# #     'days_listed': 'int64'
-# # })
+# # Ensure column types are consistent before displaying
+filtered_df = filtered_df.astype({
+    'index': 'object',
+    'model_year': 'int64',
+    'price': 'float64',
+    'odometer': 'float64',
+    'days_listed': 'int64'
+})
 
-# # Ensure the index is reset to avoid issues
-# filtered_df = filtered_df.reset_index(drop=True)
+# Ensure the index is reset to avoid issues
+filtered_df = filtered_df.reset_index(drop=True)
 
-# # Display the dataframe dtypes
-# st.subheader('DataFrame Column Types')
-# st.write(filtered_df.dtypes)
+# Display the dataframe dtypes
+st.subheader('DataFrame Column Types')
+st.write(filtered_df.dtypes)
 
-# column_list = ('make', 'model_year', 'model', 'type','condition', 'price', 'date_posted','days_listed', 'paint_color',
-#                'cylinders', 'transmission', 'is_4wd')
+column_list = ('make', 'model_year', 'model', 'type','condition', 'price', 'date_posted','days_listed', 'paint_color',
+               'cylinders', 'transmission', 'is_4wd')
 
 
-# # Display the dataframe based on the selected year
-# st.dataframe(
+# Display the dataframe based on the selected year
+st.dataframe(
+    filtered_df,
+    column_config={
+        "model_year": st.column_config.NumberColumn(
+            "model year",
+            step=1,
+            format="%d"
+        ),
+        "paint_color":st.column_config.Column(
+            "paint color"
+        ),
+        "days_listed":st.column_config.Column(
+            "days listed"
+        ),
+        "is_4wd":st.column_config.Column(
+            "has 4wd"
+        ),
+        "date_posted": st.column_config.DateColumn(
+            "date posted",
+            format="MM-DD-YYYY",
+            step=1,
+        ),
+    },
+    column_order=column_list,
+    hide_index=True,
+)
+
+
+
+
+# st.data_editor(
 #     filtered_df,
 #     column_config={
 #         "model_year": st.column_config.NumberColumn(
@@ -158,43 +189,13 @@ st.write("Number of results: ", filtered_df.shape[0])
 #             step=1,
 #         ),
 #     },
-#     column_order=column_list,
 #     hide_index=True,
 # )
 
 
-
-
-# # st.data_editor(
-# #     filtered_df,
-# #     column_config={
-# #         "model_year": st.column_config.NumberColumn(
-# #             "model year",
-# #             step=1,
-# #             format="%d"
-# #         ),
-# #         "paint_color":st.column_config.Column(
-# #             "paint color"
-# #         ),
-# #         "days_listed":st.column_config.Column(
-# #             "days listed"
-# #         ),
-# #         "is_4wd":st.column_config.Column(
-# #             "has 4wd"
-# #         ),
-# #         "date_posted": st.column_config.DateColumn(
-# #             "date posted",
-# #             format="MM-DD-YYYY",
-# #             step=1,
-# #         ),
-# #     },
-# #     hide_index=True,
-# # )
-
-
-# st.write(' ')
-# st.write(' ')
-# st.write(' ')
+st.write(' ')
+st.write(' ')
+st.write(' ')
 
 
 st.header('Data Visualizations Exploring the Selected Year')
