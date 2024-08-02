@@ -46,8 +46,10 @@ def read_and_clean(file_path):
         else:
             df[column] = df[column].fillna(0.0)
 
-    # Convert model_year column to int
-    df['model_year'] = df['model_year'].astype('int')
+    # Ensure all values in model_year are numeric before converting to int
+    df['model_year'] = pd.to_numeric(df['model_year'], errors='coerce')
+    df = df.dropna(subset=['model_year'])
+    df['model_year'] = df['model_year'].astype(int)
 
     # Create a 'make' column for manufacturer
     df['make'] = df['model'].str.split(' ', expand=True)[0]
