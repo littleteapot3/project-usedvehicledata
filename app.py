@@ -29,9 +29,10 @@ def read_and_clean(path):
     # Read in the file
     df = pd.read_csv(path)
 
-    # Tidy the data
-    # Drop rows without a year
+    # Ensure all values in model_year are numeric before converting to int
     df = df.dropna(subset=['model_year'])
+    df['model_year'] = pd.to_numeric(df['model_year'], errors='coerce')
+    df['model_year'] = df['model_year'].astype(int)
 
     #Reset the index
     df = df.reset_index(drop=True)
@@ -48,52 +49,50 @@ def read_and_clean(path):
         else:
             df[column] = df[column].fillna(0.0)
 
-    # Ensure all values in model_year are numeric before converting to int
-    df['model_year'] = pd.to_numeric(df['model_year'], errors='coerce')
-    df = df.dropna(subset=['model_year'])
-    df['model_year'] = df['model_year'].astype(int)
+
 
     # Create a 'make' column for manufacturer
     df['make'] = df['model'].str.split(' ', expand=True)[0]
     df['make'] = df['make'].astype('category')
 
-    vehicles_df = df.reset_index()
-    return vehicles_df
+    df = df.reset_index()
+    return df
 
 # Preprocess the data
 file_path = "vehicles_us.csv"
-vehicles_df = read_and_clean(file_path)
+df_init = read_and_clean(file_path)
 
 
 # Function to filter and show data for the selected year
-def filtered_df(vehicles_df, selected_make, selected_year='All'):
+def selected_df(vehicles_df, selection1, year):
     """
     Filter the DataFrame based on the selected year and manufacturer.
 
     Parameters:
     - vehicles_df: The input DataFrame to filter.
+    - selection1: The manufacturer selected from the dropdown or None.
     - selected_year: The year selected from the dropdown or 'all'.
-    - selected_manufacturer: The manufacturer selected from the dropdown or None.
+
 
     Returns:
     - A filtered DataFrame based on the criteria.
     """
-    if selected_year == 'All' and not selected_make:
+    if year == 'All' and not selected_make:
         # Show all the data
-        filtered_df = vehicles_df
-    elif selected_year != 'All' and not selected_make:
+        new_df = vehicles_df
+    elif year != 'All' and not selected_make:
         # Filter by year only
-        filtered_df = vehicles_df[vehicles_df['model_year'] == selected_year]
-    elif selected_year != 'All' and selected_make:
+        new_df = vehicles_df[vehicles_df['model_year'] == year]
+    elif year != 'All' and selected_make:
        # Filter by year and make
-        filtered_df = vehicles_df[(vehicles_df['model_year'] == selected_year) & (vehicles_df['make'].isin(selected_make))]
+        new_df = vehicles_df[(vehicles_df['model_year'] == year) & (vehicles_df['make'].isin(selected_make))]
     else:
         # If the year is 'all' and a manufacturer is selected
         #filtered_df = vehicles_df[(vehicles_df['Manufacturer'] == selected_make)]
-        filtered_df = vehicles_df[(vehicles_df.make.isin(selected_make))]
+        new_df = vehicles_df[(vehicles_df.make.isin(selected_make))]
 
-    filtered_df = filtered_df.reset_index(drop=True)
-    return filtered_df
+    new_df = new_df.reset_index(drop=True)
+    return new_df
 
 
 # Sidebar - Create options for dropdown
@@ -104,11 +103,10 @@ options_with_none = ['All'] + options
 selected_year = st.sidebar.selectbox('Model Year', options_with_none)
 
 # Sidebar - Manufacturer selection
-sorted_unique_makes = sorted(vehicles_df.make.unique())
+sorted_unique_makes = sorted(df_init.make.unique())
 selected_make = st.sidebar.multiselect('Manufacturer', sorted_unique_makes)
-#df_selected_make = vehicles_df[(vehicles_df.make.isin(selected_make))]
 
-filtered_df = filtered_df(vehicles_df, selected_make, selected_year)
+filtered_df = selected_df(df_init, selected_make, selected_year)
 
 
 # Display data
@@ -119,58 +117,52 @@ Select a year using the Data Filter. The resulting data for that year will appea
 """)
 st.write("Number of results: ", filtered_df.shape[0])
 
-# Ensure column types are consistent before displaying
-filtered_df = filtered_df.astype({
-    'index': 'object',
-    'model_year': 'int',
-    'price': 'float64',
-    'odometer': 'float64',
-    'days_listed': 'int64'
-})
+# # # Ensure column types are consistent before displaying
+# # filtered_df = filtered_df.astype({
+# #     'index': 'str',
+# #     'model_year': 'int64',
+# #     'price': 'float64',
+# #     'odometer': 'float64',
+# #     'days_listed': 'int64'
+# # })
 
-# # Ensure the index is reset to avoid issues
-# table_df = filtered_df.reset_index(drop=True)
-# st.write(table_df.dtypes)
+# # Convert object columns to strings
+# # Function to clean data
 
-# st.write(table_df['model_year'].apply(type).unique())
+# # Convert only object columns to strings
+# object_cols = filtered_df.select_dtypes(include='object').columns
 
-# st.write(table_df['model_year'].dtype)
-
-
-
-column_list = ('make', 'model_year', 'model', 'type','condition', 'price', 'date_posted','days_listed', 'paint_color',
-               'cylinders', 'transmission', 'is_4wd')
+# for col in object_cols:
+#     filtered_df[col] = filtered_df[col].astype("string")
 
 
-# Display the dataframe based on the selected year
+# st.write("Data Types After Conversion:")
+# st.write(filtered_df.dtypes)
 
+
+# # Display the DataFrame
+# st.write("Cleaned DataFrame:")
+# st.dataframe(filtered_df)
+
+
+st.write("Data Viewer")
+table_df = filtered_df.astype(str)
 st.dataframe(
-    filtered_df,
+    table_df,
     column_config={
-        "model_year": st.column_config.NumberColumn(
+         "model_year": st.column_config.NumberColumn(
             "model year",
             step=1,
             format="%d"
         ),
-        "paint_color":st.column_config.Column(
-            "paint color"
-        ),
-        "days_listed":st.column_config.Column(
-            "days listed"
-        ),
-        "is_4wd":st.column_config.Column(
-            "has 4wd"
-        ),
-        "date_posted": st.column_config.DateColumn(
-            "date posted",
-            format="MM-DD-YYYY",
+        "days_listed": st.column_config.NumberColumn(
+            "days listed",
             step=1,
-        ),
+            format="$%d",
+        )
     },
-    column_order=column_list,
     hide_index=True,
 )
-
 
 
 
