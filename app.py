@@ -150,7 +150,7 @@ st.data_editor(
             step=1,
         ),
     },
-    hide_index=none,
+    hide_index=None,
 )
 
 
