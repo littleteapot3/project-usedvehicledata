@@ -1,3 +1,5 @@
+"""Module we're using to run the app, explore data, and create visuals"""
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -15,6 +17,16 @@ st.sidebar.header('Data filters')
 @st.cache_data
 
 def read_and_clean(file_path):
+    """
+    Preprocess the data from the CSV file.
+    
+    Parameters:
+    - df: The input DataFrame to filter.
+
+    Returns:
+    - A filtered DataFrame based on the criteria.
+    """
+    
     # Read in the file
     df = pd.read_csv(file_path)
 
@@ -54,7 +66,7 @@ def filtered_df(vehicles_df, selected_make, selected_year='All'):
     Filter the DataFrame based on the selected year and manufacturer.
     
     Parameters:
-    - df: The input DataFrame to filter.
+    - vehicles_df: The input DataFrame to filter.
     - selected_year: The year selected from the dropdown or 'all'.
     - selected_manufacturer: The manufacturer selected from the dropdown or None.
 
@@ -69,7 +81,7 @@ def filtered_df(vehicles_df, selected_make, selected_year='All'):
         filtered_df = vehicles_df[vehicles_df['model_year'] == selected_year]
     elif selected_year != 'All' and selected_make:
        # Filter by year and make 
-       filtered_df = vehicles_df[(vehicles_df['model_year'] == selected_year) & (vehicles_df['make'].isin(selected_make))]
+        filtered_df = vehicles_df[(vehicles_df['model_year'] == selected_year) & (vehicles_df['make'].isin(selected_make))]
     else:
         # If the year is 'all' and a manufacturer is selected
         #filtered_df = vehicles_df[(vehicles_df['Manufacturer'] == selected_make)]
@@ -210,7 +222,9 @@ st.plotly_chart(fig2)
 # Scatterplot: Price vs Odometer Reading
 st.header('Price vs. Odometer Reading')
 st.write(""" 
-The scatterplot of price vs. odometer reading provides insights into how mileage affects the price of vehicles. Generally, we expect to see that higher mileage vehicles tend to be priced lower. This scatterplot helps validate or challenge that 
+The scatterplot of price vs. odometer reading provides insights into how mileage
+affects the price of vehicles. Generally, we expect to see that higher mileage
+vehicles tend to be priced lower. This scatterplot helps validate or challenge that 
 assumption and highlights any interesting patterns or anomalies in the data.  
 """)
 fig3 = px.scatter(filtered_df, x='odometer', y='price', color='condition', title='Price vs. Odometer Reading', labels={'odometer':'Odometer Reading', 'price':'Price'})
