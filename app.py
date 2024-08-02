@@ -115,13 +115,17 @@ Select a year using the Data Filter. The resulting data for that year will appea
 """)
 st.write("Number of results: ", filtered_df.shape[0])
 
-# Ensure column types are consistent before displaying
-filtered_df = filtered_df.astype({
-    'model_year': 'int64',
-    'price': 'float64',
-    'odometer': 'float64',
-    'days_listed': 'int64'
-})
+# # Ensure column types are consistent before displaying
+# filtered_df = filtered_df.astype({
+#     'model_year': 'int64',
+#     'price': 'float64',
+#     'odometer': 'float64',
+#     'days_listed': 'int64'
+# })
+
+# Ensure the index is reset to avoid issues
+filtered_df = filtered_df.reset_index(drop=True)
+
 
 # Display the dataframe based on the selected year
 st.data_editor(
@@ -146,7 +150,7 @@ st.data_editor(
             step=1,
         ),
     },
-    hide_index=True,
+    hide_index=none,
 )
 
 
