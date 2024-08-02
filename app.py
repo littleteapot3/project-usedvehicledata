@@ -7,8 +7,8 @@ import plotly.express as px
 st.title('Used Vehicle Sales Explorer')
 
 st.write("""
-This app performs simple explorations of used vehicle sales data.  
-- **Python libraries:** pandas, plotly.express, streamlit  
+This app performs simple explorations of used vehicle sales data.
+- **Python libraries:** pandas, plotly.express, streamlit
 - **Data source:** [Practicum content](https://practicum-content.s3.us-west-1.amazonaws.com/datasets/vehicles_us.csv)
 """)
 
@@ -19,7 +19,7 @@ st.sidebar.header('Data filters')
 def read_and_clean(path):
     """
     Preprocess the data from the CSV file.
-    
+
     Parameters:
     - df: The input DataFrame to filter.
 
@@ -69,7 +69,7 @@ vehicles_df = read_and_clean(file_path)
 def filtered_df(vehicles_df, selected_make, selected_year='All'):
     """
     Filter the DataFrame based on the selected year and manufacturer.
-    
+
     Parameters:
     - vehicles_df: The input DataFrame to filter.
     - selected_year: The year selected from the dropdown or 'all'.
@@ -85,15 +85,16 @@ def filtered_df(vehicles_df, selected_make, selected_year='All'):
         # Filter by year only
         filtered_df = vehicles_df[vehicles_df['model_year'] == selected_year]
     elif selected_year != 'All' and selected_make:
-       # Filter by year and make 
+       # Filter by year and make
         filtered_df = vehicles_df[(vehicles_df['model_year'] == selected_year) & (vehicles_df['make'].isin(selected_make))]
     else:
         # If the year is 'all' and a manufacturer is selected
         #filtered_df = vehicles_df[(vehicles_df['Manufacturer'] == selected_make)]
         filtered_df = vehicles_df[(vehicles_df.make.isin(selected_make))]
 
+    filtered_df = filtered_df.reset_index(drop=True)
     return filtered_df
-    
+
 
 # Sidebar - Create options for dropdown
 options = list(reversed(range(1908, 2020)))
@@ -113,7 +114,7 @@ filtered_df = filtered_df(vehicles_df, selected_make, selected_year)
 # Display data
 st.header('Display Stats of Selected Vehicle Data')
 st.write("""
-Select a year using the Data Filter. The resulting data for that year will appear below. 
+Select a year using the Data Filter. The resulting data for that year will appear below.
 - **Please note:** selecting "All" will display the data for all years available.
 """)
 st.write("Number of results: ", filtered_df.shape[0])
@@ -121,14 +122,20 @@ st.write("Number of results: ", filtered_df.shape[0])
 # Ensure column types are consistent before displaying
 filtered_df = filtered_df.astype({
     'index': 'object',
-    'model_year': 'int64',
+    'model_year': 'int',
     'price': 'float64',
     'odometer': 'float64',
     'days_listed': 'int64'
 })
 
-# Ensure the index is reset to avoid issues
-filtered_df = filtered_df.reset_index(drop=True)
+# # Ensure the index is reset to avoid issues
+# table_df = filtered_df.reset_index(drop=True)
+# st.write(table_df.dtypes)
+
+# st.write(table_df['model_year'].apply(type).unique())
+
+# st.write(table_df['model_year'].dtype)
+
 
 
 column_list = ('make', 'model_year', 'model', 'type','condition', 'price', 'date_posted','days_listed', 'paint_color',
@@ -136,7 +143,6 @@ column_list = ('make', 'model_year', 'model', 'type','condition', 'price', 'date
 
 
 # Display the dataframe based on the selected year
-
 
 st.dataframe(
     filtered_df,
@@ -200,7 +206,7 @@ fig_condition = px.pie(condition_distribution, values='count', names='condition'
 st.plotly_chart(fig_condition)
 
 
-# Bar chart - Average Price by Vehicle Type 
+# Bar chart - Average Price by Vehicle Type
 # Average price by vehicle type
 avg_price_by_type = filtered_df.groupby('type')['price'].mean().reset_index()
 
@@ -212,10 +218,11 @@ st.plotly_chart(fig_price)
 # Histogram - Vehicle Prices
 st.subheader('Distribution of Vehicle Price by Condition')
 st.write("""
-The histogram of vehicle prices reveals the distribution of prices across the dataset. 
+The histogram of vehicle prices reveals the distribution of prices across the dataset.
     This visualization helps identify the most common price ranges and any significant outliers.
 """)
-fig1 = px.histogram(filtered_df, x='price', nbins=50, color='condition', histnorm='percent', title='Vehicle Prices Distribution')
+fig1 = px.histogram(filtered_df, x='price', nbins=50, color='condition',
+                    histnorm='percent', title='Vehicle Prices Distribution')
 st.plotly_chart(fig1)
 
 
@@ -223,7 +230,7 @@ st.plotly_chart(fig1)
 st.subheader('Comparison of Days Listed by Condition')
 st.write("""
 This histogram of days listed helps to visually compare the days listed for the selected manufacturers by condition.
-Creating an expectation of how long a vehicle might be listed for helpful to buyers and sellers of used vehicles. 
+Creating an expectation of how long a vehicle might be listed for helpful to buyers and sellers of used vehicles.
          """)
 
 # Checkbox - Normalize data for histogram
@@ -249,12 +256,12 @@ st.plotly_chart(fig2)
 # Scatterplot: Price vs Odometer Reading
 st.header('Price vs. Odometer Reading')
 st.write("""
-         The scatterplot of price vs. odometer reading provides insights into how mileage 
+         The scatterplot of price vs. odometer reading provides insights into how mileage
          affects the price of vehicles. Generally, we expect to see that higher mileage
-         vehicles tend to be priced lower. This scatterplot helps validate or challenge that 
-         assumption and highlights any interesting patterns or anomalies in the data.  
+         vehicles tend to be priced lower. This scatterplot helps validate or challenge that
+         assumption and highlights any interesting patterns or anomalies in the data.
 """)
-fig3 = px.scatter(filtered_df, x='odometer', y='price', color='condition', 
+fig3 = px.scatter(filtered_df, x='odometer', y='price', color='condition',
                   title='Price vs. Odometer Reading',
                     labels={'odometer':'Odometer Reading', 'price':'Price'})
 st.plotly_chart(fig3)
