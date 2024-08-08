@@ -27,9 +27,32 @@ def read_and_clean(path):
     - df: The cleaned DataFrame.
     """
     df = pd.read_csv(path)
-    df = df.dropna(subset=['model_year'])
-    df['model_year'] = pd.to_numeric(df['model_year'], errors='coerce').astype(int)
+
+    # Replace NaNs in 'model_year' with the median year
+    median_year = df['model_year'].median()
+    df['model_year'] = df['model_year'].fillna(median_year)
+
+
+    # Replace the NaNs in 'cyclinder' with the median number of cylinders for the vehicle model.
+    df['cylinders'] = df.groupby('model')['cylinders'].transform(lambda x: x.fillna(x.median()))
+
+    # Replace NaNs in 'odometer' with the mean value grouped by 'model_year' and 'model'
+    df['odometer'] = df.groupby(['model_year', 'model'])['odometer'].transform(lambda x: x.fillna(round(x.mean(), 2)))
+
+    # Replace the NaNs in 'paint_color' 'unknown'
+    df['paint_color'] = df['paint_color'].fillna('unknown')
+
+    # Replace NaNs in 'is_4wd' with 0
+    df['is_4wd'] = df['is_4wd'].fillna(0)
+    df['is_4wd'] = df['is_4wd'].astype(bool)
+
+    # Change date_posted from object to datetime
     df['date_posted'] = pd.to_datetime(df['date_posted'], format='%Y-%m-%d')
+
+    # Change 'model_year' from float to int
+    df['model_year'] = pd.to_numeric(df['model_year'], errors='coerce').astype(int)
+
+    # Create a 'make' column for the manufacturers
     df['make'] = df['model'].str.split(' ', expand=True)[0].astype('category')
     df = df.reset_index(drop=True)
     return df
@@ -98,7 +121,7 @@ st.dataframe(
         "days_listed": st.column_config.NumberColumn(
             "days listed",
             step=1,
-            format="$%d",
+            format="%d",
         )
     },
     hide_index=True,
@@ -153,7 +176,24 @@ st.header('Price vs. Odometer Reading')
 st.write("""
 The scatterplot of price vs. odometer reading provides insights into how mileage affects the price of vehicles. Generally, we expect to see that higher mileage vehicles tend to be priced lower. This scatterplot helps validate or challenge that assumption and highlights any interesting patterns or anomalies in the data.
 """)
-fig3 = px.scatter(filtered_df, x='odometer', y='price', color='condition', title='Price vs. Odometer Reading', labels={'odometer': 'Odometer Reading', 'price': 'Price'})
+
+# Idenitfy the outliers for price
+
+# Calculate IQR for 'price'
+Q1_price = filtered_df['price'].quantile(0.25)
+Q3_price = filtered_df['price'].quantile(0.75)
+IQR_price = Q3_price - Q1_price
+
+# Define the outlier bounds
+lower_bound_price = Q1_price - 1.5 * IQR_price
+upper_bound_price = Q3_price + 1.5 * IQR_price
+
+# Filter out outliers
+filtered_scat = filtered_df[(filtered_df['price'] >= lower_bound_price) & (filtered_df['price'] <= upper_bound_price)]
+
+
+fig3 = px.scatter(filtered_scat, x='odometer', y='price', color='condition', title='Price vs. Odometer Reading (Outliers Removed)',
+                   labels={'odometer': 'Odometer Reading', 'price': 'Price'})
 st.plotly_chart(fig3)
 
 # Insights and Conclusion
