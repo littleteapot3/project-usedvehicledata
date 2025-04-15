@@ -55,3 +55,6 @@ This project was designed to:
 - Add predictive pricing models  
 - Include more vehicle attributes (fuel type, color, region)  
 - Improve layout and UX based on user feedback
+
+✍️ Personal Note:
+Revisiting this project reminded me how much I’ve learned — and how much of it I’ve already put into practice. Even if some skills feel rusty, they’re there. Rebuilding my confidence one project at a time. 🥂
